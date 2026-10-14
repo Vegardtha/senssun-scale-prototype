@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Senssun BLE scale — local prototype</title>
+  <link rel="stylesheet" href="/web/styles.css">
+  <script type="module" src="/web/app.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Senssun BLE scale — local prototype</h1>
+    <p class="sub">Reads raw GATT data directly from the scale. Everything stays in this browser profile; nothing is uploaded.</p>
+    <ul id="env" class="env" aria-label="Environment checks"></ul>
+  </header>
+
+  <main>
+    <section id="connection" aria-labelledby="h-conn">
+      <h2 id="h-conn">1. Connect</h2>
+      <fieldset>
+        <legend>Which devices to show in the browser picker</legend>
+        <label><input type="radio" name="scan-mode" value="service" checked> Devices advertising service FFF0 (Senssun, per APK)</label>
+        <label><input type="radio" name="scan-mode" value="name"> Name starts with <input id="name-prefix" type="text" size="14" placeholder="e.g. SENSSUN" autocomplete="off"></label>
+        <label><input type="radio" name="scan-mode" value="all"> All nearby devices (use if the scale does not advertise FFF0)</label>
+      </fieldset>
+      <label class="block">Extra services to request access to (16-bit or 128-bit UUIDs, comma separated)
+        <input id="extra-services" type="text" placeholder="e.g. ffe0, ffb0" autocomplete="off">
+      </label>
+      <p class="hint">Always requested: <span id="default-services"></span>. Web Bluetooth hides every service not listed here, so add any UUIDs you see in nRF Connect.</p>
+      <label><input id="auto-notify" type="checkbox" checked> After discovery, read Device Information strings and subscribe to FFF1 notifications</label>
+      <div class="buttons">
+        <button id="btn-connect" type="button">Scan &amp; connect</button>
+        <button id="btn-reconnect" type="button" disabled>Reconnect</button>
+        <button id="btn-disconnect" type="button" disabled>Disconnect</button>
+      </div>
+      <p id="conn-status" class="status" role="status" aria-live="polite">Not connected.</p>
+    </section>
+
+    <section aria-labelledby="h-latest">
+      <h2 id="h-latest">2. Latest decoded packet</h2>
+      <div id="latest" class="latest"><p class="muted">No decoded packets yet. Unknown packets are only shown in the log.</p></div>
+      <p id="counters" class="muted"></p>
+    </section>
+
+    <section aria-labelledby="h-gatt">
+      <h2 id="h-gatt">3. Discovered GATT services</h2>
+      <p class="hint">Read/notify controls appear only for characteristics that advertise those properties. Writes are disabled in this phase.</p>
+      <div id="gatt"><p class="muted">Connect to list services.</p></div>
+    </section>
+
+    <section aria-labelledby="h-log">
+      <h2 id="h-log">4. Raw BLE event log</h2>
+      <div class="buttons">
+        <label><input id="log-raw" type="checkbox" checked> raw reads/notifications</label>
+        <label><input id="log-packets" type="checkbox" checked> decoder results</label>
+        <label><input id="log-status" type="checkbox" checked> status</label>
+      </div>
+      <div class="table-wrap">
+        <table id="log">
+          <thead><tr><th>#</th><th>Time (local)</th><th>Kind</th><th>Characteristic</th><th>Bytes (hex)</th><th>Interpretation</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint">Newest first; the table shows the latest 500 rows. Exports contain everything.</p>
+    </section>
+
+    <section aria-labelledby="h-session">
+      <h2 id="h-session">5. Session (saved locally)</h2>
+      <label class="block">Session name <input id="session-name" type="text" autocomplete="off"></label>
+      <p id="save-status" class="muted"></p>
+      <div class="buttons">
+        <button id="btn-new" type="button">New session</button>
+        <button id="btn-export-json" type="button">Export JSON</button>
+        <button id="btn-export-csv" type="button">Export events CSV</button>
+        <button id="btn-export-meas" type="button">Export measurements CSV</button>
+        <button id="btn-export-fixture" type="button">Export as test fixture</button>
+      </div>
+      <h3>Saved sessions</h3>
+      <ul id="saved" class="saved"></ul>
+    </section>
+
+    <section aria-labelledby="h-limits">
+      <h2 id="h-limits">Limitations</h2>
+      <ul>
+        <li>Web Bluetooth works in Chromium browsers (Chrome, Edge) on desktop and Android. Firefox and Safari do not support it.</li>
+        <li>The page must be a secure context (this server uses <code>http://localhost</code>), and scanning must start from a click.</li>
+        <li>The computer needs a working Bluetooth LE adapter. The Android emulator cannot reach a physical scale.</li>
+        <li>Only services listed in the request are visible. Some UUIDs (for example the TI OAD service F000FFC0) are blocked by the browser.</li>
+        <li>Advertisement payloads (used by Senssun "broadcast" scales) are not available through the standard picker.</li>
+        <li>Close Movinglife on your phone first: many scales accept only one connection.</li>
+        <li>Decoded values follow the legacy Senssun frame layout from the Movinglife APK and have not yet been checked against a real capture.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

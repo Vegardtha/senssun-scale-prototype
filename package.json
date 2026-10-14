@@ -1,0 +1,14 @@
+{
+  "name": "senssun-scale-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-only Web Bluetooth prototype for reading a Senssun-family BLE body scale without the Movinglife app.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}

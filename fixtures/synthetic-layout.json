@@ -1,0 +1,169 @@
+{
+  "description": "Hand-constructed frames that follow the byte layout read from the APK parser (o00oo0O.o00000O.Oooo0o0 and SDeviceDataParseManager). NOT captured from a scale. Lengths and checksums were computed independently of the decoder. Replace or supplement with real captures in fixtures/captured/.",
+  "provenance": "synthetic-from-apk-layout",
+  "cases": [
+    {
+      "name": "0x80 realtime weight, settling, division 0",
+      "notifications": ["10 00 00 C5 0E 03 80 02 D5 06 3F 01 00 AE"],
+      "expected": [
+        {
+          "status": "decoded", "type": "realtime-weight",
+          "fields": { "weightRaw": 725, "lbRaw": 1599, "division": 0, "unitCode": 1, "stable": false },
+          "measurements": { "weight": 72.5, "weight_lb_field": 159.9 }
+        }
+      ]
+    },
+    {
+      "name": "0x80 realtime weight, stable (AA), division 1",
+      "notifications": ["10 00 00 C5 0E 03 80 1C 43 06 3B 11 AA EC"],
+      "expected": [
+        {
+          "status": "decoded", "type": "realtime-weight",
+          "fields": { "weightRaw": 7235, "division": 1, "stable": true },
+          "measurements": { "weight": 72.35, "weight_lb_field": 159.5 }
+        }
+      ]
+    },
+    {
+      "name": "0x80 stable (BA), unit code 2 uses lb field",
+      "notifications": ["10 00 00 C5 0E 03 80 02 D5 06 3F 02 BA 69"],
+      "expected": [
+        {
+          "status": "decoded", "type": "realtime-weight",
+          "fields": { "unitCode": 2, "stable": true },
+          "measurements": { "weight": 72.5294, "weight_lb_field": 159.9 }
+        }
+      ]
+    },
+    {
+      "name": "0x80 overload (FFFF) reports no weight",
+      "notifications": ["10 00 00 C5 0E 03 80 FF FF FF FF 01 AA 38"],
+      "expected": [
+        { "status": "decoded", "type": "realtime-weight", "fields": { "overload": true }, "measurements": {} }
+      ]
+    },
+    {
+      "name": "0x82 realtime report with body composition and heart rate",
+      "notifications": ["10 00 00 C5 1F 03 82 00 00 01 02 D5 00 E1 01 F4 02 26 01 90 00 23 06 40 00 00 00 00 00 48 BC"],
+      "expected": [
+        {
+          "status": "decoded", "type": "measurement-report",
+          "fields": { "record": "realtime", "pin": "0001", "impedanceRaw": 500, "division": 0, "heartRate": 72, "secondsAgo": 0 },
+          "measurements": { "weight": 72.5, "impedance": 500, "fat": 22.5, "water": 55, "muscle": 40, "bone": 3.5, "bmr": 1600, "heart_rate": 72 }
+        }
+      ]
+    },
+    {
+      "name": "0x82 report with impedance 0 has weight only",
+      "notifications": ["10 00 00 C5 1E 03 82 00 00 01 02 D5 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 7B"],
+      "expected": [
+        {
+          "status": "decoded", "type": "measurement-report",
+          "fields": { "impedanceRaw": 0, "heartRate": null },
+          "measurements": { "weight": 72.5 }
+        }
+      ]
+    },
+    {
+      "name": "0x82 history record, division 1, 3600 s ago",
+      "notifications": ["10 00 00 C5 1E 03 82 01 00 02 1C 43 00 E1 01 F4 02 26 01 90 00 23 06 40 00 00 0E 10 10 2B"],
+      "expected": [
+        {
+          "status": "decoded", "type": "measurement-report",
+          "fields": { "record": "history", "pin": "0002", "division": 1, "secondsAgo": 3600 },
+          "measurements": { "weight": 72.35, "impedance": 500, "fat": 22.5, "water": 55, "muscle": 40, "bone": 3.5, "bmr": 1600 }
+        }
+      ]
+    },
+    {
+      "name": "0x82 with sys FF (end of history)",
+      "notifications": ["10 00 00 C5 09 03 82 FF 8D"],
+      "expected": [
+        { "status": "decoded", "type": "measurement-report", "fields": { "sys": "FF" }, "measurements": {} }
+      ]
+    },
+    {
+      "name": "0x8D device config",
+      "notifications": ["10 00 00 C5 0C 03 8D 01 01 50 02 F0"],
+      "expected": [
+        {
+          "status": "decoded", "type": "device-config",
+          "fields": { "unitCode": 1, "division": 1, "weightRangeNibble": 0, "batteryRaw": 80, "motherBabyMode": false, "gravidMode": true },
+          "measurements": {}
+        }
+      ]
+    },
+    {
+      "name": "0x81 user-op reply",
+      "notifications": ["10 00 00 C5 0B 03 81 00 00 01 90"],
+      "expected": [
+        { "status": "decoded", "type": "user-op-reply", "fields": { "op": "UserInfoNew", "pin": "0001" }, "measurements": {} }
+      ]
+    },
+    {
+      "name": "0x83 time-sync reply",
+      "notifications": ["10 00 00 C5 08 03 83 8E"],
+      "expected": [
+        { "status": "decoded", "type": "time-sync-reply", "measurements": {} }
+      ]
+    },
+    {
+      "name": "0x8C TLV report (weight + composition)",
+      "notifications": ["10 00 00 C5 21 03 8C 00 01 05 00 04 1C 43 12 0C 00 E1 02 26 01 90 00 23 06 40 21 06 00 00 00 00 61"],
+      "expected": [
+        {
+          "status": "decoded", "type": "tlv-report",
+          "fields": { "pin": "0001", "unitCode": 2, "division": 1 },
+          "measurements": { "weight": 72.35, "fat": 22.5, "water": 55, "muscle": 40, "bone": 3.5, "bmr": 1600 }
+        }
+      ]
+    },
+    {
+      "name": "unsupported function code is unknown",
+      "notifications": ["10 00 00 C5 09 03 99 01 A6"],
+      "expected": [
+        { "status": "unknown", "reason": "unsupported-function", "measurements": {} }
+      ]
+    },
+    {
+      "name": "bad checksum is invalid",
+      "notifications": ["10 00 00 C5 0E 03 80 02 D5 06 3F 01 00 AF"],
+      "expected": [
+        { "status": "invalid", "reason": "checksum-mismatch", "measurements": {} }
+      ]
+    },
+    {
+      "name": "0x82 split across two notifications",
+      "notifications": [
+        "10 00 00 C5 1F 03 82 00 00 01 02 D5 00 E1 01 F4 02 26 01 90",
+        "00 23 06 40 00 00 00 00 00 48 BC"
+      ],
+      "expected": [
+        { "status": "decoded", "type": "measurement-report", "measurements": { "weight": 72.5, "impedance": 500, "fat": 22.5, "water": 55, "muscle": 40, "bone": 3.5, "bmr": 1600, "heart_rate": 72 } }
+      ]
+    },
+    {
+      "name": "two frames in one notification",
+      "notifications": ["10 00 00 C5 0E 03 80 02 D5 06 3F 01 00 AE 10 00 00 C5 0E 03 80 1C 43 06 3B 11 AA EC"],
+      "expected": [
+        { "status": "decoded", "type": "realtime-weight", "measurements": { "weight": 72.5, "weight_lb_field": 159.9 } },
+        { "status": "decoded", "type": "realtime-weight", "measurements": { "weight": 72.35, "weight_lb_field": 159.5 } }
+      ]
+    },
+    {
+      "name": "garbage before a frame is reported, not dropped",
+      "notifications": ["AA BB 10 00 00 C5 08 03 83 8E"],
+      "expected": [
+        { "status": "unknown", "reason": "bytes-before-header", "measurements": {} },
+        { "status": "decoded", "type": "time-sync-reply", "measurements": {} }
+      ]
+    },
+    {
+      "name": "non-legacy notification is unknown",
+      "notifications": ["01 02 03 04 05 06"],
+      "expected": [
+        { "status": "unknown", "reason": "no-legacy-header", "measurements": {} }
+      ]
+    }
+  ]
+}

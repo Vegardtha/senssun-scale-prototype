@@ -1,0 +1,40 @@
+{
+  "description": "Byte sequences copied verbatim from constants in the Movinglife 5.13.0 APK. These are app-to-scale command templates, not scale notifications; they verify the framing and checksum rule against real bytes and confirm that non-report frames are reported as unknown.",
+  "provenance": "apk-constant",
+  "source": {
+    "apk": "com.moving.movinglife 5.13.0",
+    "apkSha256": "299831b583ba06627bfffe4e037b3267c62e6073a276710c761981ea8658809d",
+    "dex": "classes3.dex",
+    "class": "o00oo0O0.o00O0O (static byte arrays)"
+  },
+  "cases": [
+    {
+      "name": "query-all-users command (o00O0O.OooOo0O)",
+      "notifications": ["10 00 00 C5 08 03 07 12"],
+      "expected": [
+        { "status": "unknown", "reason": "unsupported-function", "frame": { "group": 3, "func": 7, "checksumOk": true }, "measurements": {} }
+      ]
+    },
+    {
+      "name": "command template 03 06 (o00O0O.OooOo0o)",
+      "notifications": ["10 00 00 C5 08 03 06 11"],
+      "expected": [
+        { "status": "unknown", "reason": "unsupported-function", "frame": { "group": 3, "func": 6, "checksumOk": true }, "measurements": {} }
+      ]
+    },
+    {
+      "name": "product-1115 pre-command (o00O0O.OooOo, group AA)",
+      "notifications": ["10 00 00 C5 09 AA 00 02 B5"],
+      "expected": [
+        { "status": "unknown", "reason": "unsupported-group", "frame": { "group": 170, "checksumOk": true }, "measurements": {} }
+      ]
+    },
+    {
+      "name": "A5-prefixed template from a different protocol family (o00O0O.OooO00o)",
+      "notifications": ["A5 10 00 00 00 00 00 00 00"],
+      "expected": [
+        { "status": "unknown", "reason": "no-legacy-header", "measurements": {} }
+      ]
+    }
+  ]
+}

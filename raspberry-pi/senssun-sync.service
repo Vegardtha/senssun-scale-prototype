@@ -1,0 +1,19 @@
+[Unit]
+Description=Senssun scale weight to Garmin Connect
+After=default.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory=%h/senssun-scale-prototype/raspberry-pi
+ExecStart=%h/senssun-scale-prototype/raspberry-pi/.venv/bin/python %h/senssun-scale-prototype/raspberry-pi/sync.py --config %h/.config/senssun-sync/config.toml run
+Environment=PYTHONUNBUFFERED=1
+UMask=0077
+NoNewPrivileges=true
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=90
+
+[Install]
+WantedBy=default.target

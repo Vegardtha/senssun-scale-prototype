@@ -1,0 +1,7 @@
+address = "AA:BB:CC:DD:EE:FF"
+state_dir = "~/.local/state/senssun-sync"
+dry_run = true
+min_kg = 30.0
+max_kg = 200.0
+duplicate_seconds = 180
+scan_seconds = 15
